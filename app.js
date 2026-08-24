@@ -1,10 +1,9 @@
-import { countdownConfig, formatRemaining, getRemaining } from './countdown.js';
+import { countdownConfig, formatRemaining, formatTargetLabel, getRemaining } from './countdown.js';
 import { createSprites } from './sprites.js';
 
 const shell = document.querySelector('.countdown-shell');
 const countdown = document.querySelector('#countdown');
 const targetLabel = document.querySelector('#target-label');
-const timezone = document.querySelector('#timezone');
 const liveAnnouncement = document.querySelector('#live-announcement');
 const dawnMessage = document.querySelector('#dawn-message');
 const fullscreenToggle = document.querySelector('#fullscreen-toggle');
@@ -463,8 +462,7 @@ function setMotion(reduced) {
   motionToggle.textContent = reduced ? 'Motion: off' : 'Motion: on';
 }
 
-timezone.textContent = countdownConfig.timezoneLabel;
-targetLabel.textContent = 'Until 28 August 2026 · 18:00 HKT';
+targetLabel.textContent = formatTargetLabel(countdownConfig.target);
 
 if (!state.reduced) spawnWalker(performance.now());
 

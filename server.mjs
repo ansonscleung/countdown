@@ -7,6 +7,24 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('./', import.meta.url));
 const port = Number(process.env.PORT) || 3000;
 
+try {
+  const dotenv = await fs.readFile(path.join(root, '.env'), 'utf8');
+  for (const line of dotenv.split(/\r?\n/)) {
+    const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/.exec(line);
+    if (match && !(match[1] in process.env)) process.env[match[1]] = match[2];
+  }
+} catch {}
+
+const envTarget = process.env.COUNTDOWN_TARGET;
+let countdownTarget = null;
+if (envTarget) {
+  if (!Number.isNaN(new Date(envTarget).getTime())) {
+    countdownTarget = envTarget;
+  } else {
+    console.warn(`Ignoring invalid COUNTDOWN_TARGET "${envTarget}" (not a parseable date)`);
+  }
+}
+
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -33,8 +51,13 @@ const server = createServer(async (req, res) => {
     }
     const data = await fs.readFile(filePath);
     const type = mimeTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+    let body = data;
+    if (countdownTarget && type.startsWith('text/html')) {
+      const snippet = `<script>window.COUNTDOWN_CONFIG = { target: ${JSON.stringify(countdownTarget)} };</script>`;
+      body = Buffer.from(data.toString('utf8').replace('</head>', `${snippet}</head>`));
+    }
     res.writeHead(200, { 'content-type': type, 'cache-control': 'no-cache' });
-    res.end(data);
+    res.end(body);
   } catch {
     res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
     res.end('Not found');

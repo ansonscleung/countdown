@@ -39,15 +39,17 @@ npm test
 
 ## 改倒數目標時間
 
-編輯 `countdown.js` 頂部嘅 `countdownConfig.target`（ISO 8601 格式，記得帶時區）：
+預設目標係 `2026-08-28T18:00:00+08:00`。想改時間，用環境變數 `COUNTDOWN_TARGET`（ISO 8601 格式，建議帶 UTC offset）：
 
-```js
-export const countdownConfig = {
-  target: '2026-08-28T18:00:00+08:00',
-  title: 'The darkest hour is just before the dawn',
-  timezoneLabel: 'HKT'
-};
+```bash
+COUNTDOWN_TARGET=2026-12-25T20:00:00+08:00 npm start   # macOS / Linux
+set COUNTDOWN_TARGET=2026-12-25T20:00:00+08:00 && npm start   # Windows cmd
+$env:COUNTDOWN_TARGET = "2026-12-25T20:00:00+08:00"; npm start   # Windows PowerShell
 ```
+
+運作原理：`server.mjs` 啟動時讀取 `COUNTDOWN_TARGET`，驗證係咪合法日期，然後將 `window.COUNTDOWN_CONFIG` 注入 `index.html`；`countdown.js` 讀取呢個 global，讀唔到（或者 env 無設/無效）就 fallback 返預設值。頁面上嘅 "Until ..." 字樣會自動跟住新目標生成，時區顯示自訂目標會變成 `UTC±HH:MM` 格式。
+
+想永久改預設值（連 env 都唔使設），就編輯 `countdown.js` 頂部嘅 `DEFAULT_TARGET`。
 
 ## 檔案結構
 
