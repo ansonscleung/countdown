@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { countdownConfig, getRemaining, formatRemaining, formatTargetLabel } from './countdown.js';
+import { renderCountdownConfig } from './build-config.mjs';
+
+test('generates a browser config from the Netlify build environment', () => {
+  assert.equal(
+    renderCountdownConfig('2026-08-31T18:00:00+08:00'),
+    'globalThis.COUNTDOWN_CONFIG = { target: "2026-08-31T18:00:00+08:00" };\n'
+  );
+  assert.throws(() => renderCountdownConfig('not-a-date'), /not a valid date/);
+});
 
 test('uses the configured Hong Kong target timestamp', () => {
   assert.equal(countdownConfig.target, '2026-08-28T18:00:00+08:00');

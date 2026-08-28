@@ -47,7 +47,13 @@ set COUNTDOWN_TARGET=2026-12-25T20:00:00+08:00 && npm start   # Windows cmd
 $env:COUNTDOWN_TARGET = "2026-12-25T20:00:00+08:00"; npm start   # Windows PowerShell
 ```
 
-運作原理：`server.mjs` 啟動時讀取 `COUNTDOWN_TARGET`，驗證係咪合法日期，然後將 `window.COUNTDOWN_CONFIG` 注入 `index.html`；`countdown.js` 讀取呢個 global，讀唔到（或者 env 無設/無效）就 fallback 返預設值。頁面上嘅 "Until ..." 字樣會自動跟住新目標生成，時區顯示自訂目標會變成 `UTC±HH:MM` 格式。
+運作原理：
+
+- Netlify 只會發佈靜態檔案，唔會執行 `server.mjs`。`netlify.toml` 因此會喺部署時執行 `npm run build`，將 build environment 入面嘅 `COUNTDOWN_TARGET` 寫入瀏覽器會載入嘅 `countdown-config.js`。
+- 本機用 `npm start` 時，`server.mjs` 亦會讀取 `COUNTDOWN_TARGET`（或者 `.env`）並注入設定。
+- `countdown.js` 讀取呢個 global，讀唔到就 fallback 返預設值。頁面上嘅 "Until ..." 字樣會自動跟住新目標生成，時區顯示自訂目標會變成 `UTC±HH:MM` 格式。
+
+Netlify 改完環境變數後要重新 deploy；deploy log 應該會見到 `Generated countdown-config.js for ...`。如果 Netlify UI 有自訂 Build command 或 Publish directory，請分別設成 `npm run build` 同專案根目錄（`.`），或者清除 override 等佢使用 `netlify.toml`。
 
 想永久改預設值（連 env 都唔使設），就編輯 `countdown.js` 頂部嘅 `DEFAULT_TARGET`。
 
@@ -58,6 +64,8 @@ $env:COUNTDOWN_TARGET = "2026-12-25T20:00:00+08:00"; npm start   # Windows Power
 | `index.html` | 版面骨架 |
 | `styles.css` | Pixel 字體排版（Google Fonts：Press Start 2P + VT323） |
 | `countdown.js` | 倒數邏輯（純函數，有測試） |
+| `countdown-config.js` | Build 時產生、供靜態 host 瀏覽器讀取嘅設定 |
+| `build-config.mjs` | 將 `COUNTDOWN_TARGET` 轉成瀏覽器設定 |
 | `sprites.js` | Pixel-art 角色系統：字元地圖 → offscreen canvas → nearest-neighbour 放大 |
 | `app.js` | Canvas 冬夜場景：分層雪地、星空、巡遊人物、破曉動畫 |
 | `server.mjs` | 零依賴 static server（`node:http`） |
