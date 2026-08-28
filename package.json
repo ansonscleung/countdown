@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "node build-config.mjs",
     "start": "node server.mjs",
     "test": "node --test"
   }
